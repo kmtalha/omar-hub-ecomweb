@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="description" content="Browse our collection and order in one tap on WhatsApp. Cash on Delivery available." />
+<meta name="theme-color" content="#1C1917" />
+<script>
+/* On a product link such as /p/prod-123, load style.css, app.js etc. from the site root */
+if (location.pathname.indexOf("/p/") === 0) document.write('<base href="/">');
+</script>
+<title>Lumina Social Shop - Order Directly on WhatsApp</title>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://res.cloudinary.com">
+<link rel="preload" href="work-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="bitter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="tailwind.css" />
+</head>
+<body class="min-h-screen flex flex-col">
+<div id="bootLoader" class="boot-loader" role="status" aria-label="Loading store">
+<div class="boot-brand">
+<div id="bootLogo" class="boot-logo" hidden>
+<img id="bootLogoImg" src="" alt="" hidden />
+<span id="bootLogoInitial" hidden></span>
+</div>
+<p id="bootName" class="boot-name"></p>
+<div class="boot-spinner"></div>
+</div>
+</div>
+<script>
+/* Runs instantly (before the main script) so the saved logo shows on the very first paint. */
+(function () {
+try {
+var b = JSON.parse(localStorage.getItem('lumina_boot_brand_v1') || 'null');
+if (!b) return;
+var root = document.documentElement.style;
+if (b.primary) root.setProperty('--brand-primary', b.primary);
+if (b.rgb) root.setProperty('--brand-rgb', b.rgb);
+var box = document.getElementById('bootLogo');
+if (b.logo) {
+var img = document.getElementById('bootLogoImg');
+img.onerror = function () { img.hidden = true; var i = document.getElementById('bootLogoInitial'); i.textContent = b.initial || ''; i.hidden = false; };
+img.src = b.logo; img.hidden = false;
+} else if (b.initial) {
+var ini = document.getElementById('bootLogoInitial'); ini.textContent = b.initial; ini.hidden = false;
+}
+if (b.logo || b.initial) box.hidden = false;
+document.getElementById('bootName').textContent = b.name || '';
+} catch (e) {}
+})();
+</script>
+<a href="#shopSection" class="skip-link" data-go="shop">Skip to products</a>
+<div id="ownerAdminStatusBar" class="hidden bg-stone-900 text-amber-300 text-xs py-2 px-4 border-b border-stone-700">
+<div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="font-bold text-white">🔓 Owner Admin Mode Unlocked</span>
+<span class="text-stone-400 hidden sm:inline">• Customers cannot see this bar or the Admin Panel</span>
+</div>
+<div class="flex items-center gap-2">
+<button id="topBarGoAdminBtn" type="button" class="px-2.5 py-1 rounded-lg bg-amber-400 text-stone-950 font-bold hover:bg-amber-300 transition">
+⚙️ Open Admin Panel
+</button>
+<button id="topBarLockAdminBtn" type="button" class="px-2.5 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-semibold border border-stone-600 transition">
+🔒 Lock &amp; View as Customer
+</button>
+</div>
+</div>
+</div>
+<div id="announcementBar" class="announce">
+<span class="hidden sm:inline">Order in one tap on WhatsApp. Cash on Delivery available.</span>
+<span class="sm:hidden">Cash on Delivery. Order on WhatsApp.</span>
+</div>
+<header id="siteHeader" class="site-header">
+<div id="scrollProgress" class="scroll-progress" aria-hidden="true"></div>
+<div class="wrap header-row">
+<button id="mobileMenuBtn" type="button" class="icon-btn md:hidden -ml-1.5" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenuPanel">
+<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+</button>
+<div class="brand">
+<button id="secretLogoTriggerBtn" type="button" title="Store Logo" class="logo-mark focus:outline-none select-none">
+<span id="headerLogoCircle">L</span>
+<img id="headerLogoImg" src="" alt="Store Logo" class="hidden w-full h-full object-cover rounded-full bg-white" />
+</button>
+<button id="navBrandBtn" type="button" class="brand-name">
+<span id="headerStoreName" class="truncate">Lumina Lifestyle</span>
+<svg class="w-4 h-4 text-sky-500 shrink-0 hidden min-[480px]:block" viewBox="0 0 20 20" fill="currentColor" aria-label="Verified Store">
+<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+</svg>
+</button>
+</div>
+<nav class="nav-desktop hidden md:flex" aria-label="Main">
+<button id="tabShopBtn" type="button" data-nav-view="shop" class="nav-link is-active" aria-current="page">Shop</button>
+<button id="tabInfoBtn" type="button" data-nav-view="info" class="nav-link">Delivery &amp; FAQ</button>
+<button id="tabAdminBtn" type="button" data-nav-view="admin" data-admin-only class="nav-link hidden">Admin (<span id="adminCountBadge">4</span>)</button>
+</nav>
+<div class="header-actions">
+<button id="openSearchBtn" type="button" class="search-pill" aria-label="Search products">
+<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+<span class="hidden lg:inline">Search products</span>
+<kbd class="hidden lg:inline">/</kbd>
+</button>
+<button id="headerSavedBtn" type="button" class="icon-btn relative hidden sm:inline-flex" aria-label="Saved items">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 000-7.8z"/></svg>
+<span id="headerSavedCount" class="count-dot hidden">0</span>
+</button>
+<button id="openCartBtn" type="button" class="cart-btn" aria-label="Open shopping bag">
+<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+<span class="hidden min-[480px]:inline">Bag</span>
+<span id="headerCartCount" class="cart-count">0</span>
+</button>
+</div>
+</div>
+</header>
+<main id="main" class="flex-1 w-full">
+<section id="viewShop">
+<section id="hero" class="hero" aria-roledescription="carousel" aria-label="Featured offers">
+<div id="heroSlides" class="hero-track" aria-live="off"></div>
+<div class="hero-feature-wrap">
+<div class="wrap hero-feature-pos"><div id="heroFeature"></div></div>
+</div>
+<div class="hero-controls">
+<div class="wrap hero-controls__row">
+<div id="heroDots" class="hero-dots" role="group" aria-label="Choose slide"></div>
+<div class="hero-arrows">
+<button id="heroPrevBtn" type="button" class="hero-arrow" aria-label="Previous slide">
+<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+</button>
+<button id="heroPauseBtn" type="button" class="hero-arrow" aria-label="Pause slideshow" aria-pressed="false">
+<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g id="heroPauseIcon"><path d="M8 5v14M16 5v14"/></g></svg>
+</button>
+<button id="heroNextBtn" type="button" class="hero-arrow" aria-label="Next slide">
+<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+</button>
+</div>
+</div>
+</div>
+</section>
+<div class="wrap identity-wrap">
+<div class="identity">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+<div class="flex items-start gap-3.5 sm:gap-4 min-w-0">
+<div id="heroLogoBadge" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl brand-bg text-white flex items-center justify-center font-extrabold text-2xl shadow-sm shrink-0 overflow-hidden border border-stone-200">
+<span id="heroLogoInitial">L</span>
+<img id="heroLogoImg" src="" alt="Store Logo" class="hidden w-full h-full object-cover bg-white" />
+</div>
+<div class="min-w-0 space-y-1.5">
+<div class="flex flex-wrap items-center gap-2">
+<h1 id="heroStoreTitle" class="font-display text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">Lumina Lifestyle</h1>
+</div>
+<p id="heroStoreTagline" class="text-sm text-stone-600 leading-relaxed max-w-xl">Curated everyday essentials &amp; accessories.</p>
+<div class="pt-1.5 flex flex-wrap items-center gap-2">
+<button id="directWhatsAppHeroBtn" type="button" class="chip-btn is-wa">Chat on WhatsApp</button>
+<button id="quickSwitchAdminBtn" type="button" data-admin-only class="chip-btn is-owner hidden">Upload / Edit Products (Owner)</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 min-[420px]:grid-cols-3 lg:grid-cols-1 gap-2 lg:w-64 shrink-0">
+<div class="trust-tile"><svg class="trust-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v.01M18 14.5v.01"/></svg><div><p class="trust-title">Cash on Delivery</p><p class="trust-sub hidden sm:block">Pay when you receive</p></div></div>
+<div class="trust-tile"><svg class="trust-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/></svg><div><p class="trust-title">Order on WhatsApp</p><p class="trust-sub hidden sm:block">No account needed</p></div></div>
+<div class="trust-tile"><svg class="trust-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h4l3 3v4h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg><div><p class="trust-title">Fast Delivery</p><p id="trustDeliveryText" class="trust-sub hidden sm:block">Inside City ৳70</p></div></div>
+</div>
+</div>
+</div>
+</div>
+<div id="shopSection" class="wrap shop-wrap space-y-5">
+<div class="flex items-end justify-between gap-3">
+<h2 class="section-title font-display text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">Products</h2>
+<p id="resultCount" class="text-sm text-stone-500 pb-1" aria-live="polite"></p>
+</div>
+<div class="space-y-3">
+<div class="flex flex-col sm:flex-row gap-2.5">
+<div class="relative flex-1">
+<svg class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" /></svg>
+<input id="searchInput" type="text" aria-label="Search products" placeholder="Search by name, category, or keyword..." class="field-input w-full pl-10 pr-9 py-2.5 rounded-2xl text-sm" />
+<button id="clearSearchBtn" type="button" aria-label="Clear search" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs font-bold">✕</button>
+</div>
+<div class="flex items-center gap-2">
+<label for="sortSelect" class="text-xs font-semibold text-stone-500 shrink-0">Sort by</label>
+<select id="sortSelect" class="field-input rounded-2xl px-3.5 py-2.5 text-sm font-medium text-stone-700 flex-1 sm:flex-none min-w-0">
+<option value="featured">Featured</option>
+<option value="price-asc">Price: low to high</option>
+<option value="price-desc">Price: high to low</option>
+</select>
+</div>
+</div>
+<div id="categoryPillsContainer" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+</div>
+<div id="productGrid" class="grid xs-single-col grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 min-[400px]:gap-3.5 sm:gap-5"></div>
+<div id="emptyStateBox" class="hidden card-elevated rounded-3xl p-10 text-center space-y-3">
+<h3 class="text-lg font-bold text-stone-800">No matching products found</h3>
+<p class="text-sm text-stone-500 max-w-sm mx-auto">Clear your search or switch to “All” to see the full catalog.</p>
+<button id="resetFiltersBtn" type="button" class="btn-hero btn-sheen">Show all products</button>
+</div>
+</div>
+</section>
+<section id="viewInfo" class="hidden wrap py-8 sm:py-10 space-y-6">
+<div class="card-elevated rounded-3xl p-6 sm:p-8 space-y-6">
+<div class="space-y-1">
+<span class="text-xs font-bold uppercase tracking-wider brand-text">Customer Guide</span>
+<h2 class="text-2xl font-extrabold text-stone-900">How Ordering &amp; Delivery Works</h2>
+<p class="text-sm text-stone-600">We keep shopping simple, transparent, and friendly—right through WhatsApp.</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="bg-stone-50 border border-stone-200/70 rounded-2xl p-4 space-y-1.5">
+<div class="w-8 h-8 rounded-full brand-soft-bg brand-text font-bold text-sm flex items-center justify-center">1</div>
+<h3 class="font-bold text-stone-900 text-sm">Pick Your Favorites</h3>
+<p class="text-xs text-stone-600 leading-relaxed">Browse photos and prices. Tap <strong>Order on WhatsApp</strong> for 1 item, or <strong>Add to Bag</strong> for multiple items.</p>
+</div>
+<div class="bg-stone-50 border border-stone-200/70 rounded-2xl p-4 space-y-1.5">
+<div class="w-8 h-8 rounded-full brand-soft-bg brand-text font-bold text-sm flex items-center justify-center">2</div>
+<h3 class="font-bold text-stone-900 text-sm">Enter Delivery Details</h3>
+<p class="text-xs text-stone-600 leading-relaxed">Fill in your name, phone number, and delivery address so we know where to send your package.</p>
+</div>
+<div class="bg-stone-50 border border-stone-200/70 rounded-2xl p-4 space-y-1.5">
+<div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm flex items-center justify-center">3</div>
+<h3 class="font-bold text-stone-900 text-sm">Send Message on WhatsApp</h3>
+<p class="text-xs text-stone-600 leading-relaxed">WhatsApp opens with your complete order summary pre-typed. Just hit Send and we'll confirm right away!</p>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+<div class="border border-stone-200 rounded-2xl p-5 space-y-3 bg-white">
+<div class="flex items-center gap-2">
+<h3 class="font-bold text-stone-900">Delivery Charges &amp; Time</h3>
+</div>
+<div class="space-y-2 text-sm">
+<div class="flex justify-between py-1.5 border-b border-stone-100">
+<span class="text-stone-600">Inside City (1–2 Days)</span>
+<span id="infoInsideFee" class="font-bold text-stone-900">৳70</span>
+</div>
+<div class="flex justify-between py-1.5 border-b border-stone-100">
+<span class="text-stone-600">Outside City / Nationwide (2–4 Days)</span>
+<span id="infoOutsideFee" class="font-bold text-stone-900">৳130</span>
+</div>
+<p class="text-xs text-stone-500 pt-1">All packages are carefully packed and checked before dispatch.</p>
+</div>
+</div>
+<div class="border border-stone-200 rounded-2xl p-5 space-y-3 bg-white">
+<div class="flex items-center gap-2">
+<h3 class="font-bold text-stone-900">Customer-Friendly Payment Options</h3>
+</div>
+<ul class="space-y-2 text-xs sm:text-sm text-stone-600">
+<li class="flex items-center gap-2">
+<span class="text-emerald-600 font-bold">✓</span>
+<span><strong>Cash on Delivery (COD):</strong> Pay in cash when the rider delivers your product.</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="text-emerald-600 font-bold">✓</span>
+<span><strong>Mobile Wallet / Digital Pay:</strong> bKash, Nagad, or Bank Transfer supported via WhatsApp confirmation.</span>
+</li>
+<li class="flex items-center gap-2">
+<span class="text-emerald-600 font-bold">✓</span>
+<span><strong>Easy Inspection:</strong> Check your product in front of the delivery rider.</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="pt-2 flex flex-wrap items-center justify-between gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+<div>
+<h4 class="font-bold text-emerald-950 text-sm">Have a question before ordering?</h4>
+<p class="text-xs text-emerald-800">Message us directly on WhatsApp and we'll reply fast.</p>
+</div>
+<button id="infoAskWhatsAppBtn" type="button" class="whatsapp-btn text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm">
+Ask Us on WhatsApp
+</button>
+</div>
+</div>
+</section>
+<section id="viewAdmin" class="hidden wrap py-8 sm:py-10 space-y-6">
+<div class="card-elevated rounded-3xl p-5 sm:p-6 bg-gradient-to-r from-stone-900 to-stone-800 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="inline-block px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[11px] font-bold uppercase tracking-wider">Private Owner Dashboard</span>
+<span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold">🔒 Hidden from Customers</span>
+</div>
+<h2 class="text-xl sm:text-2xl font-extrabold">Store Manager &amp; Product Upload</h2>
+<p class="text-xs sm:text-sm text-stone-300">Customers never see this panel. Upload your products here, then export your ready-to-host website file for your domain.</p>
+</div>
+<div class="flex flex-wrap gap-2 shrink-0">
+<button type="button" data-go="heroEditor" class="px-3.5 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 text-white font-semibold text-xs transition">🖼️ Edit Hero Banner</button>
+<button id="adminPreviewShopBtn" type="button" class="px-3.5 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 text-white font-semibold text-xs transition">
+👁️ Preview Store
+</button>
+<button id="adminLockBtn" type="button" class="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold text-xs transition shadow-sm">
+🔒 Lock Admin &amp; Exit to Customer View
+</button>
+</div>
+</div>
+<div id="cloudStatusCard" class="hidden card-elevated rounded-3xl p-5 sm:p-6 border-2 border-emerald-200 bg-emerald-50/50 space-y-1.5">
+<h3 class="text-base sm:text-lg font-extrabold text-stone-900">☁️ Live cloud mode is on</h3>
+<p class="text-xs sm:text-sm text-stone-600 leading-relaxed">Every change you save here is published instantly and every visitor sees it. No file to download or upload. <span id="photoModeNote"></span></p>
+</div>
+<div id="publishBannerCard" class="card-elevated rounded-3xl p-5 sm:p-6 border-2 border-emerald-200 bg-emerald-50/50 space-y-4">
+<div id="publishBannerIntro" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="space-y-1">
+<div class="inline-flex items-center gap-1.5 text-emerald-800 font-extrabold text-xs uppercase tracking-wider">
+<span>🌐 Ready for Your Domain &amp; Hosting</span>
+</div>
+<h3 class="text-base sm:text-lg font-extrabold text-stone-900">How to Publish Your Store So Customers Only See Products</h3>
+<p class="text-xs sm:text-sm text-stone-600 leading-relaxed">
+After you upload your product photos, prices, and WhatsApp number below, click <strong>Download Customer-Only Website (index.html)</strong> and upload that file to your hosting (<code class="bg-white px-1.5 py-0.5 rounded border border-stone-200 text-[11px]">public_html/index.html</code>). It contains <strong>zero admin panel code</strong> so customers can only browse and order on WhatsApp!
+</p>
+</div>
+</div>
+<div id="publishBannerGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+<button id="downloadCustomerOnlyHtmlBtn" type="button" class="flex flex-col items-start justify-between p-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-left transition shadow-sm">
+<div class="space-y-1">
+<span class="inline-block px-2 py-0.5 rounded-md bg-emerald-800 text-emerald-100 text-[10px] font-bold uppercase">Recommended for Hosting</span>
+<p class="font-extrabold text-sm">🔒 Download Customer-Only index.html</p>
+<p class="text-[11px] text-emerald-100 leading-snug">100% pure customer storefront with all your products baked in. Admin panel is completely stripped out.</p>
+</div>
+<span class="mt-3 text-xs font-bold underline">⬇️ Download index.html →</span>
+</button>
+<button id="downloadFullProtectedHtmlBtn" type="button" class="flex flex-col items-start justify-between p-4 rounded-2xl bg-white hover:bg-stone-50 border border-stone-200 text-stone-900 text-left transition">
+<div class="space-y-1">
+<span class="inline-block px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-[10px] font-bold uppercase">Owner Master Copy</span>
+<p class="font-extrabold text-sm">🔑 Download Master HTML (With Hidden Admin)</p>
+<p class="text-[11px] text-stone-500 leading-snug">Saves your products inside the file while keeping the hidden, password-locked Admin Panel for future edits.</p>
+</div>
+<span class="mt-3 text-xs font-bold text-stone-800 underline">⬇️ Download Master File →</span>
+</button>
+<div class="flex flex-col justify-between p-4 rounded-2xl bg-white border border-stone-200 text-stone-900 space-y-2">
+<div class="space-y-1">
+<span class="inline-block px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-[10px] font-bold uppercase">Catalog Data Backup</span>
+<p class="font-extrabold text-sm">💾 Backup / Restore JSON</p>
+<p class="text-[11px] text-stone-500 leading-snug">Save your product database as a JSON file or import a saved backup anytime.</p>
+</div>
+<div class="flex items-center gap-2 pt-1">
+<button id="exportCatalogBtn" type="button" class="flex-1 py-1.5 px-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs transition">
+⬇️ Export JSON
+</button>
+<label for="importCatalogFile" class="flex-1 py-1.5 px-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs text-center cursor-pointer transition">
+📂 Import JSON
+</label>
+<input id="importCatalogFile" type="file" accept=".json,application/json" class="hidden" />
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<div class="lg:col-span-5 space-y-6">
+<div class="card-elevated rounded-3xl p-5 space-y-4">
+<div class="flex items-center justify-between border-b border-stone-100 pb-3">
+<div>
+<h3 class="font-bold text-stone-900 text-base">1. Store, WhatsApp &amp; Security</h3>
+<p class="text-xs text-stone-500">Where customer orders go &amp; your private Admin PIN</p>
+</div>
+<span class="text-lg">📱</span>
+</div>
+<form id="storeSettingsForm" class="space-y-3.5">
+<div class="p-3.5 rounded-2xl bg-stone-50 border border-stone-200/80 space-y-2">
+<div class="flex items-center justify-between">
+<label class="block text-xs font-bold text-stone-700">Website Brand Logo</label>
+<button id="removeStoreLogoBtn" type="button" class="hidden text-[11px] font-semibold text-rose-600 hover:underline">Remove Logo</button>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-16 h-16 rounded-2xl brand-bg text-white flex items-center justify-center font-extrabold text-xl overflow-hidden shrink-0 border border-stone-200 shadow-xs">
+<span id="adminLogoInitial">L</span>
+<img id="adminLogoPreviewImg" src="" alt="Logo Preview" class="hidden w-full h-full object-cover bg-white" />
+</div>
+<div class="flex-1 space-y-1.5">
+<label for="settingLogoFile" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl brand-soft-bg brand-text font-bold text-xs cursor-pointer hover:opacity-90 transition">
+<span>🖼️ Upload Logo Photo</span>
+</label>
+<input id="settingLogoFile" type="file" accept="image/*" class="hidden" />
+<input id="settingLogoUrl" type="text" placeholder="Or paste Logo URL / Drive link..." class="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs" />
+</div>
+</div>
+</div>
+<div>
+<label for="settingWhatsApp" class="block text-xs font-bold text-stone-700 mb-1">Your WhatsApp Number (with country code) *</label>
+<input id="settingWhatsApp" type="text" required placeholder="e.g. 8801712345678" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+<p class="text-[11px] text-stone-500 mt-1">Digits only with country code (e.g., <code class="bg-stone-100 px-1 rounded">8801...</code> for Bangladesh, <code class="bg-stone-100 px-1 rounded">1...</code> for US).</p>
+</div>
+<div class="grid grid-cols-1 min-[420px]:grid-cols-3 gap-2.5">
+<div class="min-[420px]:col-span-2">
+<label for="settingStoreName" class="block text-xs font-bold text-stone-700 mb-1">Store Name *</label>
+<input id="settingStoreName" type="text" required class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+</div>
+<div>
+<label for="settingCurrency" class="block text-xs font-bold text-stone-700 mb-1">Currency</label>
+<select id="settingCurrency" class="w-full px-2.5 py-2 rounded-xl border border-stone-200 text-sm bg-white">
+<option value="৳">৳ (BDT)</option>
+<option value="$">$ (USD)</option>
+<option value="₹">₹ (INR)</option>
+<option value="€">€ (EUR)</option>
+<option value="£">£ (GBP)</option>
+</select>
+</div>
+</div>
+<div>
+<label for="settingTagline" class="block text-xs font-bold text-stone-700 mb-1">Welcome Bio / Tagline</label>
+<textarea id="settingTagline" rows="2" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm"></textarea>
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<div>
+<label for="settingInsideFee" class="block text-xs font-bold text-stone-700 mb-1">Inside City Delivery</label>
+<input id="settingInsideFee" type="number" min="0" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm" />
+</div>
+<div>
+<label for="settingOutsideFee" class="block text-xs font-bold text-stone-700 mb-1">Outside City Delivery</label>
+<input id="settingOutsideFee" type="number" min="0" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm" />
+</div>
+</div>
+<div class="p-3.5 rounded-2xl bg-stone-50 border border-stone-200/80 space-y-2">
+<p class="text-xs font-bold text-stone-700">Social profile links (optional)</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+<input id="settingFacebook" type="text" placeholder="Facebook page link" aria-label="Facebook page link" class="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs" />
+<input id="settingInstagram" type="text" placeholder="Instagram profile link" aria-label="Instagram profile link" class="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs" />
+<input id="settingTiktok" type="text" placeholder="TikTok profile link" aria-label="TikTok profile link" class="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs" />
+<input id="settingYoutube" type="text" placeholder="YouTube channel link" aria-label="YouTube channel link" class="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-xs" />
+</div>
+<p class="text-[11px] text-stone-500">Leave a field empty to hide that icon. WhatsApp always shows.</p>
+</div>
+<div id="pinSettingBox" class="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-1.5">
+<label for="settingAdminPin" class="block text-xs font-bold text-stone-800">🔑 Owner Admin Password / PIN *</label>
+<input id="settingAdminPin" type="text" required placeholder="Set your secret password" class="w-full px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-sm font-mono" />
+<p class="text-[11px] text-stone-600 leading-snug">Required to unlock this panel. How to open login when locked: triple-click the round top-left logo, click the tiny <code class="bg-white px-1 rounded">🔒</code> at the very bottom footer, or visit <code class="bg-white px-1 rounded">#admin</code>.</p>
+</div>
+<div>
+<label class="block text-xs font-bold text-stone-700 mb-1.5">Customer-Friendly Color Theme</label>
+<div class="grid grid-cols-2 gap-2">
+<button type="button" data-theme="coral" class="theme-choice-btn flex items-center gap-2 p-2 rounded-xl border border-stone-200 text-xs font-semibold hover:bg-stone-50">
+<span class="w-4 h-4 rounded-full bg-[#E05A47]"></span> Warm Coral
+</button>
+<button type="button" data-theme="emerald" class="theme-choice-btn flex items-center gap-2 p-2 rounded-xl border border-stone-200 text-xs font-semibold hover:bg-stone-50">
+<span class="w-4 h-4 rounded-full bg-[#0D9488]"></span> Emerald Boutique
+</button>
+<button type="button" data-theme="rose" class="theme-choice-btn flex items-center gap-2 p-2 rounded-xl border border-stone-200 text-xs font-semibold hover:bg-stone-50">
+<span class="w-4 h-4 rounded-full bg-[#DB2777]"></span> Rose Luxe
+</button>
+<button type="button" data-theme="indigo" class="theme-choice-btn flex items-center gap-2 p-2 rounded-xl border border-stone-200 text-xs font-semibold hover:bg-stone-50">
+<span class="w-4 h-4 rounded-full bg-[#4F46E5]"></span> Modern Indigo
+</button>
+</div>
+</div>
+<button type="submit" class="w-full py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm transition shadow-sm">
+💾 Save Store &amp; Security Settings
+</button>
+</form>
+</div>
+<div class="card-elevated rounded-3xl p-5 space-y-4">
+<div class="flex items-center justify-between border-b border-stone-100 pb-3">
+<div>
+<h3 id="productFormHeading" class="font-bold text-stone-900 text-base">2. Upload New Product</h3>
+<p class="text-xs text-stone-500">Add photo, price &amp; product details</p>
+</div>
+<button id="cancelEditProductBtn" type="button" class="hidden text-xs font-semibold text-rose-600 hover:underline">
+Cancel Edit
+</button>
+</div>
+<form id="productForm" class="space-y-3.5">
+<input id="editProductId" type="hidden" value="" />
+<div>
+<label class="block text-xs font-bold text-stone-700 mb-1">Product Photos * <span class="font-normal text-stone-500">(add up to 8; the first one is the cover)</span></label>
+<div id="productGalleryList" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2.5"></div>
+<div class="space-y-1.5">
+<label for="productImageFile" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl brand-soft-bg brand-text font-bold text-xs cursor-pointer hover:opacity-90 transition">
+<span>📁 Add photos from device (select one or many)</span>
+</label>
+<input id="productImageFile" type="file" accept="image/*" multiple class="hidden" />
+<div class="flex gap-2">
+<input id="productImageUrl" type="text" placeholder="Or paste a photo link, then click Add" class="flex-1 min-w-0 px-3 py-1.5 rounded-xl border border-stone-200 text-xs" />
+<button id="productImageUrlAddBtn" type="button" class="px-3 py-1.5 rounded-xl bg-stone-900 text-white text-xs font-bold shrink-0">Add link</button>
+</div>
+<p id="driveUrlHelperText" class="text-[11px] text-stone-500">💡 Google Drive share links auto-convert! Make sure Drive sharing is set to <strong>"Anyone with the link"</strong>.</p>
+</div>
+</div>
+<div>
+<label for="productNameInput" class="block text-xs font-bold text-stone-700 mb-1">Product Title *</label>
+<input id="productNameInput" type="text" required placeholder="e.g. Classic Tan Leather Crossbody Bag" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<div>
+<label for="productPriceInput" class="block text-xs font-bold text-stone-700 mb-1">Selling Price *</label>
+<input id="productPriceInput" type="number" min="1" step="any" required placeholder="1450" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+</div>
+<div>
+<label for="productOldPriceInput" class="block text-xs font-bold text-stone-700 mb-1">Regular Price (Optional)</label>
+<input id="productOldPriceInput" type="number" min="0" step="any" placeholder="1850 (shows % OFF)" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<div>
+<label for="productCategoryInput" class="block text-xs font-bold text-stone-700 mb-1">Category *</label>
+<input id="productCategoryInput" type="text" required list="categoryOptions" autocomplete="off" placeholder="Pick one below or type a new one" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+<datalist id="categoryOptions"></datalist>
+<p class="text-[11px] text-stone-500 mt-1.5">Your categories (tap to use) or type a new name to create one:</p>
+<div id="categoryChips" class="flex flex-wrap gap-1.5 mt-1.5"></div>
+</div>
+<div>
+<label for="productStockSelect" class="block text-xs font-bold text-stone-700 mb-1">Availability</label>
+<select id="productStockSelect" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white">
+<option value="in_stock">✅ In Stock</option>
+<option value="sold_out">⛔ Sold Out</option>
+</select>
+</div>
+</div>
+<div>
+<label for="productVariantsInput" class="block text-xs font-bold text-stone-700 mb-1">Options / Sizes / Colors (Optional)</label>
+<input id="productVariantsInput" type="text" placeholder="Comma separated, e.g. Tan, Chocolate, Black" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+</div>
+<div>
+<label for="productDescInput" class="block text-xs font-bold text-stone-700 mb-1">Customer-Friendly Description *</label>
+<textarea id="productDescInput" rows="3" required placeholder="Highlight material, size, quality, and why customers love it..." class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm"></textarea>
+</div>
+<button id="submitProductBtn" type="submit" class="w-full py-2.5 rounded-xl brand-bg text-white font-bold text-sm transition shadow-sm">
+➕ Add Product to Storefront
+</button>
+</form>
+</div>
+</div>
+<div class="lg:col-span-7 space-y-4">
+<div class="card-elevated rounded-3xl p-5 space-y-4">
+<div class="flex items-center justify-between border-b border-stone-100 pb-3">
+<div>
+<h3 class="font-bold text-stone-900 text-base">Your Product Catalog (<span id="adminInventoryCount">4</span>)</h3>
+<p class="text-xs text-stone-500">Click Edit to update details or toggle Stock status anytime.</p>
+</div>
+</div>
+<div id="adminProductsList" class="space-y-3">
+</div>
+</div>
+</div>
+</div>
+<div id="heroEditorCard" class="card-elevated rounded-3xl p-5 sm:p-6 space-y-5">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
+<div>
+<h3 class="font-bold text-stone-900 text-base">3. Hero Banner Slideshow</h3>
+<p class="text-xs text-stone-500">Upload images, write the headline and choose what each button does. Slides: <span id="heroSlideCount">3 of 6</span>. Best image size: 1600 × 900 or wider.</p>
+</div>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+<div class="flex flex-wrap items-center gap-2">
+<label for="heroFeatureSelect" class="text-xs font-semibold text-stone-600">Floating product card</label>
+<select id="heroFeatureSelect" class="px-3 py-2 rounded-xl border border-stone-200 text-xs bg-white font-semibold max-w-[14rem]"></select>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<label for="heroIntervalSelect" class="text-xs font-semibold text-stone-600">Change slide every</label>
+<select id="heroIntervalSelect" class="px-3 py-2 rounded-xl border border-stone-200 text-xs bg-white font-semibold">
+<option value="4000">4 seconds</option>
+<option value="6000">6 seconds</option>
+<option value="8000">8 seconds</option>
+<option value="10000">10 seconds</option>
+</select>
+</div>
+</div>
+</div>
+<div id="heroAdminList" class="space-y-4"></div>
+<div class="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+<div class="flex flex-wrap items-center gap-2">
+<button id="heroAddSlideBtn" type="button" class="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs transition disabled:opacity-40 disabled:cursor-not-allowed">➕ Add slide</button>
+<button id="heroResetBtn" type="button" class="px-4 py-2.5 rounded-xl bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-semibold text-xs transition">Load starter slides</button>
+</div>
+<button id="heroSaveBtn" type="button" class="px-5 py-2.5 rounded-xl brand-bg text-white font-bold text-sm shadow-sm transition">💾 Save banner</button>
+</div>
+</div>
+</section>
+</main>
+<div id="searchOverlay" class="overlay-backdrop hidden fixed inset-0 z-[52] bg-stone-950/55 backdrop-blur-sm flex items-start justify-center p-3 sm:p-6" role="dialog" aria-modal="true" aria-label="Search products">
+<div class="palette">
+<div class="palette-input">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="text-stone-400 shrink-0"><path d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+<input id="paletteInput" type="text" placeholder="Search products or categories" autocomplete="off" aria-label="Search products" />
+<button id="closeSearchBtn" type="button" class="palette-esc" aria-label="Close search">Esc</button>
+</div>
+<div id="paletteResults" class="palette-results" role="listbox" aria-label="Search results"></div>
+<div class="palette-foot">
+<button type="button" class="chip-btn" data-go="saved">Saved items</button>
+<button type="button" class="chip-btn" data-go="info">Delivery &amp; FAQ</button>
+<button type="button" class="chip-btn is-wa" data-go="whatsapp">Ask on WhatsApp</button>
+</div>
+</div>
+</div>
+<div id="mobileMenuBackdrop" class="overlay-backdrop hidden fixed inset-0 z-50 bg-stone-950/55 backdrop-blur-sm md:hidden">
+<aside id="mobileMenuPanel" class="mobile-panel" aria-label="Menu">
+<div class="flex items-center justify-between gap-3 p-4 border-b border-stone-200/70">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-10 h-10 rounded-full brand-bg text-white flex items-center justify-center font-bold text-lg shrink-0 overflow-hidden">
+<span id="mobileLogoInitial">L</span>
+<img id="mobileLogoImg" src="" alt="" class="hidden w-full h-full object-cover bg-white" />
+</div>
+<span id="mobileStoreName" class="font-display font-extrabold text-stone-900 truncate">Lumina Lifestyle</span>
+</div>
+<button id="closeMobileMenuBtn" type="button" class="icon-btn" aria-label="Close menu">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
+</div>
+<div class="p-4 space-y-5 overflow-y-auto flex-1">
+<button type="button" class="search-pill w-full justify-start" data-go="search">
+<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+<span>Search products</span>
+</button>
+<nav class="space-y-1" aria-label="Mobile">
+<button type="button" data-nav-view="shop" class="mobile-link is-active">Shop</button>
+<button type="button" data-nav-view="info" class="mobile-link">Delivery &amp; FAQ</button>
+<button type="button" data-go="saved" class="mobile-link">Saved items</button>
+<button type="button" data-nav-view="admin" data-admin-only class="mobile-link hidden">Admin</button>
+</nav>
+<div>
+<p class="text-xs font-semibold text-stone-500 mb-2">Shop by category</p>
+<div id="mobileCategories" class="flex flex-wrap gap-2"></div>
+</div>
+</div>
+<div class="p-4 border-t border-stone-200/70 space-y-3">
+<button type="button" data-go="whatsapp" class="whatsapp-btn btn-sheen w-full text-white py-3 rounded-2xl font-bold text-sm">Chat on WhatsApp</button>
+<div id="mobileSocials" class="flex items-center gap-2.5 social-row-light"></div>
+</div>
+</aside>
+</div>
+<div id="adminLoginModalBackdrop" class="overlay-backdrop hidden fixed inset-0 z-[60] bg-stone-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl border border-stone-200">
+<div class="p-5 bg-stone-900 text-white flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-lg">🔒</span>
+<div>
+<h3 class="font-extrabold text-base leading-tight">Store Owner Login</h3>
+<p class="text-[11px] text-stone-400">Protected Merchant Dashboard</p>
+</div>
+</div>
+<button id="closeAdminLoginModalBtn" type="button" class="w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold">✕</button>
+</div>
+<form id="adminLoginForm" class="p-5 space-y-4" action="javascript:void(0)" onsubmit="return false">
+<p class="text-xs text-stone-600 leading-relaxed">
+Customers only see the shopping storefront. Enter your secret Owner Password / PIN to upload products or edit store settings.
+</p>
+<div id="defaultPinHintBox" class="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
+💡 <strong>First-time / Demo PIN:</strong> <code class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-amber-300">1234</code><br/>
+<span class="text-[11px] text-amber-800">Once you change your password inside Admin Settings, this hint disappears permanently.</span>
+</div>
+<div id="adminLoginEmailWrap" class="hidden">
+<label for="adminLoginEmail" class="block text-xs font-bold text-stone-700 mb-1">Admin email</label>
+<input id="adminLoginEmail" type="email" autocomplete="username" placeholder="you@example.com" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900" />
+</div>
+<div>
+<label id="adminLoginPassLabel" for="adminLoginPassInput" class="block text-xs font-bold text-stone-700 mb-1">Owner Password / PIN</label>
+<div class="relative">
+<input id="adminLoginPassInput" type="password" required autocomplete="current-password" placeholder="Enter password..." class="w-full pl-3.5 pr-11 py-2.5 rounded-xl border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900" />
+<button id="togglePassBtn" type="button" aria-label="Show password" aria-pressed="false" title="Show password" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition">
+<svg id="eyeIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+</button>
+</div>
+<p id="adminLoginError" class="hidden text-xs font-semibold text-rose-600 mt-1.5">❌ Incorrect password. Please try again.</p>
+</div>
+<div class="flex items-center gap-2 pt-1">
+<button type="button" id="cancelAdminLoginBtn" class="flex-1 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs transition">
+Cancel
+</button>
+<button type="submit" class="flex-1 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs transition shadow-sm">
+🔓 Unlock Admin
+</button>
+</div>
+</form>
+</div>
+</div>
+<div id="productModalBackdrop" class="overlay-backdrop hidden fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="modalProductTitle">
+<div class="product-sheet relative bg-white w-full sm:max-w-xl md:max-w-4xl rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+<button id="closeProductModalBtn" type="button" aria-label="Close product details" class="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-white/95 hover:bg-white text-stone-800 font-bold shadow-lg flex items-center justify-center transition hover:scale-105">✕</button>
+<div class="modal-scroll flex-1 min-h-0 overflow-y-auto overscroll-contain md:grid md:grid-cols-2">
+<div class="modal-media">
+<div class="gallery-wrap">
+<div id="galleryViewport" class="gallery-viewport">
+<div id="galleryTrack" class="gallery-track" tabindex="0" aria-label="Product photos, swipe or use the arrows"></div>
+</div>
+<button id="galleryPrevBtn" type="button" class="gallery-arrow is-prev" aria-label="Previous photo">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+</button>
+<button id="galleryNextBtn" type="button" class="gallery-arrow is-next" aria-label="Next photo">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+</button>
+<span id="galleryCounter" class="gallery-counter" aria-live="polite">1 / 1</span>
+<span id="modalDiscountBadge" class="hidden absolute top-3.5 left-3.5 px-3 py-1 rounded-full brand-bg text-white text-xs font-bold shadow-sm"></span>
+</div>
+<div id="galleryThumbs" class="gallery-thumbs no-scrollbar" role="group" aria-label="Choose photo"></div>
+</div>
+<div class="modal-body p-5 sm:p-7 space-y-5">
+<div class="space-y-2">
+<div class="flex flex-wrap items-center gap-2">
+<span id="modalProductCategory" class="text-xs font-bold brand-text"></span>
+<span id="modalStockBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0"></span>
+</div>
+<h3 id="modalProductTitle" class="font-display text-2xl sm:text-[1.7rem] font-extrabold text-stone-900 leading-tight tracking-tight pr-10 md:pr-0"></h3>
+<div class="flex items-baseline gap-2.5">
+<span id="modalProductPrice" class="text-2xl sm:text-3xl font-extrabold text-stone-900"></span>
+<span id="modalProductOldPrice" class="text-base text-stone-400 line-through"></span>
+</div>
+</div>
+<div class="border-t border-stone-100 pt-4">
+<h4 class="text-sm font-bold text-stone-900 mb-1.5">Description</h4>
+<p id="modalProductDesc" class="text-sm sm:text-[0.95rem] text-stone-600 leading-relaxed whitespace-pre-line"></p>
+</div>
+<div id="modalVariantSection" class="hidden space-y-2">
+<h4 class="text-sm font-bold text-stone-900">Choose an option</h4>
+<div id="modalVariantPills" class="flex flex-wrap gap-2"></div>
+</div>
+<div class="flex items-center justify-between gap-3 pt-4 border-t border-stone-100">
+<div>
+<span class="text-sm font-bold text-stone-900">Quantity</span>
+<p class="text-xs text-stone-500">Total: <strong id="modalLineTotal" class="text-stone-800"></strong></p>
+</div>
+<div class="flex items-center gap-3 bg-stone-100 rounded-full px-3 py-1.5">
+<button id="modalQtyMinusBtn" type="button" aria-label="Decrease quantity" class="w-8 h-8 rounded-full bg-white text-stone-800 font-bold shadow-sm">−</button>
+<span id="modalQtyValue" class="text-sm font-bold w-6 text-center">1</span>
+<button id="modalQtyPlusBtn" type="button" aria-label="Increase quantity" class="w-8 h-8 rounded-full bg-white text-stone-800 font-bold shadow-sm">+</button>
+</div>
+</div>
+<div class="flex items-center gap-2 text-xs text-stone-500 bg-stone-50 border border-stone-200/70 rounded-2xl px-3.5 py-2.5">
+<span>Cash on Delivery available. Check the product before you pay.</span>
+</div>
+</div>
+</div>
+<div class="modal-actions p-3.5 sm:p-4 bg-white border-t border-stone-200/80 grid grid-cols-2 gap-3 shrink-0">
+<button id="modalAddToBagBtn" type="button" class="py-3.5 px-4 rounded-2xl border-2 border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white font-bold text-sm transition disabled:opacity-40 disabled:cursor-not-allowed">
+Add to Bag
+</button>
+<button id="modalBuyWhatsAppBtn" type="button" class="whatsapp-btn btn-sheen text-white py-3.5 px-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed">
+<span>Order on WhatsApp</span>
+</button>
+</div>
+</div>
+</div>
+<div id="cartDrawerBackdrop" class="overlay-backdrop hidden fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm flex justify-end">
+<div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl">
+<div class="p-5 border-b border-stone-200 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<h3 class="font-extrabold text-stone-900 text-lg">Your Shopping Bag</h3>
+</div>
+<button id="closeCartDrawerBtn" type="button" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold">✕</button>
+</div>
+<div id="cartItemsContainer" class="flex-1 overflow-y-auto p-5 space-y-3">
+</div>
+<div id="cartFooterSection" class="p-5 bg-stone-50 border-t border-stone-200 space-y-4">
+<div class="space-y-1.5 text-sm">
+<div class="flex justify-between text-stone-600">
+<span>Items Subtotal</span>
+<span id="cartSubtotalText" class="font-bold text-stone-900">৳0</span>
+</div>
+<div class="flex justify-between text-xs text-stone-500">
+<span>Estimated Delivery</span>
+<span id="cartDeliveryHintText">Calculated at checkout</span>
+</div>
+</div>
+<button id="proceedToCheckoutBtn" type="button" class="w-full whatsapp-btn text-white py-3.5 rounded-2xl font-bold text-sm shadow-md flex items-center justify-center gap-2">
+<span>Proceed to WhatsApp Order</span>
+</button>
+</div>
+</div>
+</div>
+<div id="checkoutModalBackdrop" class="overlay-backdrop hidden fixed inset-0 z-[55] bg-stone-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+<div class="bg-white w-full sm:max-w-lg md:max-w-xl rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl modal-sheet flex flex-col">
+<div class="p-5 bg-emerald-600 text-white flex items-center justify-between">
+<div>
+<span class="text-[11px] uppercase tracking-wider font-bold text-emerald-100">Final Step • Fast &amp; Easy</span>
+<h3 class="text-lg font-extrabold">Complete Your WhatsApp Order</h3>
+</div>
+<button id="closeCheckoutModalBtn" type="button" class="w-8 h-8 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold">✕</button>
+</div>
+<form id="whatsappCheckoutForm" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label for="custName" class="block text-xs font-bold text-stone-700 mb-1">Your Name *</label>
+<input id="custName" type="text" required placeholder="e.g. Sarah Ahmed" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+</div>
+<div>
+<label for="custPhone" class="block text-xs font-bold text-stone-700 mb-1">Mobile Number *</label>
+<input id="custPhone" type="tel" required placeholder="e.g. 017XXXXXXXX" class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label for="custZone" class="block text-xs font-bold text-stone-700 mb-1">Delivery Area *</label>
+<select id="custZone" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white">
+</select>
+</div>
+<div>
+<label for="custPayment" class="block text-xs font-bold text-stone-700 mb-1">Payment Method *</label>
+<select id="custPayment" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white">
+<option value="Cash on Delivery (COD)">Cash on Delivery (COD)</option>
+<option value="bKash / Nagad">bKash / Nagad</option>
+</select>
+</div>
+</div>
+<div>
+<label for="custAddress" class="block text-xs font-bold text-stone-700 mb-1">Full Delivery Address *</label>
+<textarea id="custAddress" rows="2" required placeholder="House/Flat, Road, Area, City..." class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+</div>
+<div>
+<label for="custNote" class="block text-xs font-bold text-stone-700 mb-1">Special Note (Optional)</label>
+<input id="custNote" type="text" placeholder="Preferred delivery time, gift wrap, etc." class="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm" />
+</div>
+<div class="bg-stone-50 border border-stone-200 rounded-2xl p-3.5 space-y-2">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold uppercase tracking-wider text-stone-500">WhatsApp Message Preview</span>
+<span id="checkoutGrandTotalBadge" class="text-xs font-extrabold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full"></span>
+</div>
+<pre id="whatsappMessagePreview" class="text-xs text-stone-700 whitespace-pre-wrap font-sans leading-relaxed max-h-36 overflow-y-auto"></pre>
+</div>
+<div class="pt-1 flex flex-col sm:flex-row gap-2.5">
+<button type="submit" class="flex-1 whatsapp-btn text-white py-3.5 px-5 rounded-2xl font-bold text-sm shadow-md flex items-center justify-center gap-2">
+<span>Send Order on WhatsApp</span>
+</button>
+<button id="copyOrderTextBtn" type="button" class="py-3.5 px-4 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs transition shrink-0">
+Copy Order Text
+</button>
+</div>
+</form>
+</div>
+</div>
+<div id="floatingCartBar" class="hidden fixed bottom-4 inset-x-4 max-w-md mx-auto z-[35]">
+<button id="floatingCartBarBtn" type="button" class="w-full bg-stone-900 text-white p-3.5 rounded-2xl shadow-xl flex items-center justify-between border border-stone-700">
+<div class="flex items-center gap-2.5">
+<span id="floatingCartCount" class="w-7 h-7 rounded-full bg-emerald-500 text-white font-bold text-xs flex items-center justify-center">0</span>
+<span class="text-xs sm:text-sm font-bold">View Shopping Bag &amp; Order</span>
+</div>
+<span id="floatingCartTotal" class="text-sm font-extrabold text-emerald-400">৳0 →</span>
+</button>
+</div>
+<div id="toastNotification" role="status" aria-live="polite" class="hidden fixed top-20 right-4 z-[70] bg-stone-900 text-white px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-semibold flex items-center gap-2">
+<span id="toastMessage">Saved!</span>
+</div>
+<footer class="site-footer">
+<div class="footer-glow" aria-hidden="true"></div>
+<div class="wrap relative">
+<div class="newsletter">
+<div class="min-w-0">
+<h2 class="font-display text-xl sm:text-2xl font-extrabold text-white tracking-tight">New stock and offers</h2>
+<p class="text-sm text-stone-300 mt-1">Leave your email. A WhatsApp message opens with it filled in. Send it and we will add you to our list.</p>
+</div>
+<div class="w-full lg:max-w-md">
+<form id="newsletterForm" class="newsletter-form" novalidate>
+<label for="newsletterEmail" class="sr-only">Email address</label>
+<input id="newsletterEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" />
+<button type="submit" class="btn-hero btn-sheen">Join the list</button>
+</form>
+<p id="newsletterMsg" class="newsletter-msg" role="status" aria-live="polite"></p>
+</div>
+</div>
+<div class="footer-grid">
+<div class="space-y-4 min-w-0">
+<p id="footerBrandName" class="font-display text-2xl font-extrabold text-white tracking-tight">Lumina Lifestyle</p>
+<p id="footerTagline" class="text-sm text-stone-400 leading-relaxed max-w-sm"></p>
+<div id="footerSocials" class="flex flex-wrap items-center gap-3"></div>
+</div>
+<nav aria-label="Quick links">
+<h3 class="footer-heading">Quick links</h3>
+<div class="flex flex-col items-start gap-2.5">
+<button type="button" class="footer-link" data-go="home">Home</button>
+<button type="button" class="footer-link" data-go="shop">All products</button>
+<button type="button" class="footer-link" data-go="saved">Saved items</button>
+<button type="button" class="footer-link" data-go="info">Delivery &amp; FAQ</button>
+</div>
+</nav>
+<nav aria-label="Categories">
+<h3 class="footer-heading">Categories</h3>
+<div id="footerCategories" class="flex flex-col items-start gap-2.5"></div>
+</nav>
+<div>
+<h3 class="footer-heading">Need help?</h3>
+<div class="flex flex-col items-start gap-2.5">
+<button type="button" class="footer-link" data-go="whatsapp">Message us on WhatsApp</button>
+<button type="button" class="footer-link" data-go="info">Delivery charges and time</button>
+<p class="text-sm text-stone-400">Cash on Delivery available</p>
+</div>
+</div>
+</div>
+<div class="footer-bar">
+<p>© <span id="footerYear">2026</span> <strong id="footerCopyName" class="text-stone-200 font-semibold">Lumina Lifestyle</strong>. All rights reserved.</p>
+<p class="footer-note">Prices and availability can change. Your order is confirmed with you on WhatsApp.</p>
+<p class="footer-credit">Developed by <strong>Softrova</strong></p>
+<button id="footerOwnerLockBtn" type="button" title="Store Owner Login" aria-label="Store owner login" class="opacity-35 hover:opacity-100 text-stone-400 hover:text-white transition text-[11px] px-1.5 py-0.5 rounded"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
+</div>
+</div>
+</footer>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
